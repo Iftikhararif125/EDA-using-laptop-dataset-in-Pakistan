@@ -1,0 +1,212 @@
+# Data Exploratory Analysis of a laptop data set using dplyr
+rm(list =ls())
+library(dplyr)
+library(readr)
+laptop <- read_csv("C:/Users/Arif ShiGre/Downloads/results/laptop_clean_dataset.csv")
+colnames(laptop)
+laptop %>% head()
+
+# Q 1.find the hp laptops that has 8 gb ram and consider the price from high to low
+laptop %>% filter(Company == "HP" & ram == 8) %>% 
+  select(Company, TypeName,processor_speed, Price) %>% 
+  arrange(desc(Price))
+
+# Q 2. find all Dell laptops with 16 GB RAM and arrange their prices from lowest to highest?
+
+laptop %>% filter(Company == "Dell" & ram == 16) %>% 
+  arrange(desc(Price)) %>% select(Company, TypeName,processor_speed,Price)
+
+#Q3. Find all laptops manufactured by HP.
+# 
+# Display only:
+#   - Company
+# - TypeName
+# - Ram
+# - Price
+
+laptop %>% filter(Company == "HP") %>% select(Company,TypeName,ram,Price)
+# 
+# Q2. Multiple conditions
+# 
+# Find all Dell laptops that have 8 GB RAM.
+# 
+# Display Company, TypeName, Ram, and Price.
+
+laptop %>% filter(Company == "Dell" & ram == 8) %>% 
+  select(Company, TypeName, ram, Price)
+
+# Q3. Sorting
+# 
+# Find all laptops with a processor speed greater than 2.5 GHz.
+# 
+# Display Company, processor_speed, and Price.
+# 
+# Arrange the results from highest to lowest price.
+
+
+laptop %>% filter(processor_speed > 2.5) %>% 
+  select(Company, processor_speed , Price) %>% arrange(desc(Price))
+
+# 
+# Q4. Multiple filtering conditions
+# 
+# Find HP laptops with:
+#   - RAM greater than or equal to 8 GB.
+# - Price less than 100,000.
+# Display Company, TypeName, Ram, and Price.
+
+
+laptop %>% filter(Company == "HP" & ram >= 8 & Price < 100000) %>% 
+  select(Company, TypeName, ram, Price)
+
+# 
+# Q5. Top 10 expensive laptops
+# 
+# Find the 10 most expensive laptops in the dataset.
+# 
+# Display Company, TypeName, Ram, and Price.
+?slice()
+
+laptop %>% arrange(desc(Price)) %>% 
+  select(Company, TypeName,ram, Price) %>% slice(1:10)
+    #OR
+laptop %>% slice_max(order_by = Price, n = 10) %>%
+  select(Company, TypeName , ram , Price)
+
+# 
+# Q6. Create a new variable
+# 
+# Create a new column called Price_Category.
+# 
+# Use the following conditions:
+#   - Price below 50,000 → "Budget"
+# - Price between 50,000 and 100,000 → "Mid-range"
+# - Price above 100,000 → "Premium"
+# Display Company, Price, and Price_Category.
+# 
+# Hint: Use mutate() and case_when().
+?case_when
+
+laptop %>% mutate(Price_category = case_when(
+  Price < 50000 ~ "Budget",
+  Price >= 50000 & Price <= 100000 ~ "Mid-range",
+  Price > 100000 ~ "Premium",
+  TRUE ~ NA_character_  #  handle missing value
+)) %>% select(Company,Price, Price_category)
+
+# 
+# Q7. Count laptops by company
+# 
+# Calculate how many laptops each company has.
+# 
+# Display:
+#   - Company
+# - Total_Laptops
+# Arrange the results from highest to lowest number of laptops.
+
+laptop %>% select(Company) %>% count(Company) %>% arrange(desc(n))
+            #OR
+laptop %>%  count(Company, name = "total_laptos") %>% 
+  arrange(desc(total_laptos))
+
+# 
+# Q8. Average price by company
+# 
+# Calculate the average laptop price for each company.
+# 
+# Display:
+#   - Company
+# - Average_Price
+# - Maximum_Price
+# - Minimum_Price
+# Arrange companies according to Average_Price from highest to lowest.
+# 
+# Hint: Use group_by() and summarise().
+laptop %>% group_by(Company) %>% 
+  summarise(average_price = mean(Price, na.rm = T),
+            max_price = max(Price, na.rm = T),
+            min_price = min(Price, na.rm = T)) %>% 
+  arrange(desc(average_price))
+# 
+# Q9. Most expensive laptop by company
+# 
+# Find the most expensive laptop for each company.
+# 
+# Display:
+#   - Company
+# - TypeName
+# - Ram
+# - Price
+# Hint: Use group_by() and slice_max().
+
+laptop %>% group_by(Company) %>% slice_max(order_by = Price, n = 1) %>% 
+  select(Company, ram, Price )
+# Q10. Advanced analysis
+# 
+# Find the top 3 most expensive HP laptops with at least 8 
+# GB RAM and processor speed greater than 2.0 GHz.
+# 
+# Your output should contain:
+#   - Company
+# - TypeName
+# - Ram
+# - processor_speed
+# - Price
+# Sort the results from highest to lowest price.
+# 
+# Hint: Combine filter(), select(), arrange(), and slice_head().
+laptop %>% filter(Company == "HP" & ram >= 8 & processor_speed > 2) %>% 
+  select(Company, TypeName, ram, processor_speed,Price) %>% 
+  arrange(desc(Price)) %>% slice(1:3)
+
+
+# Question 11
+# Find Lenovo laptops with 16 GB RAM and prices above 100,000.
+# Display Company, TypeName, RAM and Price.
+laptop %>% filter(Company == "Lenovo" & ram == 16 & Price >100000) %>% 
+  select(Company, TypeName, ram, Price)
+
+# Question 12
+# Calculate the median price of laptops for each 
+# company, then arrange companies from lowest to highest median price.
+laptop %>% group_by(Company) %>% 
+  summarise(median_price = median(Price, na.rm = T)) %>% 
+  arrange(median_price)
+
+
+# Question 3
+# Find the top 5 most expensive Dell
+# laptops with processor speed greater than 2.5 GHz.
+
+
+laptop %>% filter(Company == "Dell" & processor_speed > 2.5) %>% 
+  slice_max(order_by = Price, n = 5)
+
+    ##### Advanced dplyr challenge
+#Try these without looking at previous solutions.
+# Q1. Find the company with the highest average laptop price.
+# Display Company and Average_Price.
+
+laptop %>% group_by(Company) %>% summarise(
+  h_avg_price = mean(Price, na.rm = T)) %>% slice_max(order_by = h_avg_price, n =1 )
+
+# For each company, calculate the number of laptops with 8 GB RAM.
+
+laptop %>% filter(ram == 8) %>%  count(Company, name = "total_8")
+
+# Q3. Find companies whose average laptop price is greater than 100,000.
+
+laptop %>% group_by(Company) %>% 
+  summarise(
+    average_price = mean(Price, na.rm = T)
+  ) %>% filter(average_price > 100000)
+
+# Q4. Calculate the average price for each combination of Company and RAM.
+
+laptop %>% group_by(Company, ram) %>% summarise(
+  average_price = mean (Price , na.rm = T)
+)
+
+# Q5. Find the most expensive laptop for each RAM category across all companies.
+
+laptop %>% group_by(ram) %>% slice_max(order_by = Price )
